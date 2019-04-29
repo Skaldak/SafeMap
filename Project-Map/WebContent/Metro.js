@@ -1,39 +1,8 @@
-function initMap() {
-    var parisCenter = {
-        lat: 48.8566,
-        lng: 2.3522
-    };
-    var map = new google.maps.Map(document.getElementById('map'), {
-        center: parisCenter,
-        zoom: 12
-    });
-    var parisMarker = new google.maps.Marker({
-        position: parisCenter,
-        map: map
-    });
+var map;
+var srcLocation, dstLocation;
+var directionsRequest, directionsService, directionsRenderer;
 
-    initStation(map);
-    initSearch(map);
-
-    // var directionsService = new google.maps.DirectionsService();
-    // var directionsDisplay = new google.maps.DirectionsRenderer();
-    // var srcLatLng = new google.maps.LatLng(48.88430478953, 2.3670850145355);
-    // var dstLatLng = new google.maps.LatLng(48.93761835474619, 2.3620002027025153);
-
-    // directionsDisplay.setMap(map);
-    // getRoute(srcLatLng, dstLatLng, directionsService, directionsDisplay);
-}
-
-function initSearch(map) {
-    var search = document.getElementById('search');
-    var input = document.getElementsByClassName('searchInput');
-
-    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(search);
-    initAutocomplete(map, input[0]);
-    initAutocomplete(map, input[1]);
-}
-
-function initAutocomplete(map, input) {
+function initAutocomplete(map, input, type) {
     var autocomplete = new google.maps.places.Autocomplete(input);
 
     autocomplete.bindTo('bounds', map);
@@ -49,6 +18,11 @@ function initAutocomplete(map, input) {
         anchorPoint: new google.maps.Point(0, -29)
     });
 
+    if (type == 'src')
+        marker.setIcon(getCircle(16, 'green', 0.5));
+    else if (type == 'dst')
+        marker.setIcon(getCircle(16, 'red', 0.5));
+
     autocomplete.addListener('place_changed', function () {
         info.close();
         marker.setVisible(false);
@@ -62,10 +36,20 @@ function initAutocomplete(map, input) {
             map.fitBounds(place.geometry.viewport);
         } else {
             map.setCenter(place.geometry.location);
-            map.setZoom(14);
+            map.setZoom(12.5);
         }
         marker.setPosition(place.geometry.location);
         marker.setVisible(true);
+        if (type == 'src') {
+            srcLocation = place.geometry.location;
+            if (dstLocation !== null && dstLocation !== undefined)
+                getRoute(srcLocation, dstLocation);
+        }
+        else if (type == 'dst') {
+            dstLocation = place.geometry.location;
+            if (srcLocation !== null && srcLocation !== undefined)
+                getRoute(srcLocation, dstLocation);
+        }
 
         var address = '';
 
@@ -83,6 +67,36 @@ function initAutocomplete(map, input) {
     });
 }
 
+function initDirection(map) {
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map);
+}
+
+function initMap() {
+    var paris = {
+        lat: 48.8566,
+        lng: 2.3522
+    };
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: paris,
+        zoom: 12
+    });
+
+    initDirection(map);
+    initSearch(map);
+    // initStation(map);
+}
+
+function initSearch(map) {
+    var search = document.getElementById('search');
+    var input = document.getElementsByClassName('searchInput');
+
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(search);
+    initAutocomplete(map, input[0], 'src');
+    initAutocomplete(map, input[1], 'dst');
+}
+
 function initStation(map) {
     $.getJSON("reseau.json", function (Metro) {
         var Station = Metro.stations;
@@ -93,21 +107,42 @@ function initStation(map) {
                 map: map,
                 position: latlng,
                 title: station,
-                icon: getCircle(getTraffic(stationInfomation.nom))
+                icon: getCircle(getMagnitude(getTraffic(stationInfomation.nom)), 'red', 0.2)
             });
         })
     })
 }
 
-function getCircle(magnitude) {
+function getCircle(magnitude, fillColor, fillOpacity) {
     return {
         path: google.maps.SymbolPath.CIRCLE,
-        fillColor: 'red',
-        fillOpacity: .2,
-        scale: (magnitude - 177017) / (50860744 - 177017) * 42,
+        fillColor: fillColor,
+        fillOpacity: fillOpacity,
+        scale: magnitude,
         strokeColor: 'white',
         strokeWeight: .5
     };
+}
+
+function getMagnitude(traffic) {
+    return (traffic - 177017) / (50860744 - 177017) * 42;
+}
+
+function getRoute(src, dst) {
+    directionsRequest = {
+        origin: src,
+        destination: dst,
+        travelMode: "TRANSIT",
+        transitOptions: {
+            modes: ['RAIL']
+        }
+    };
+
+    directionsService.route(directionsRequest, function (result, status) {
+        if (status == 'OK') {
+            directionsRenderer.setDirections(result);
+        }
+    })
 }
 
 function getTraffic(station) {
@@ -134,20 +169,9 @@ function getTraffic(station) {
         return traffic;
 }
 
-function getRoute(src, dst, directionsService, directionsDisplay) {
-    var directionsRequest = {
-        origin: src,
-        destination: dst,
-        travelMode: "TRANSIT",
-        transitOptions: {
-            modes: ['RAIL']
-        }
-    };
+function navigate() {
+    var src = $('#srcInput').val();
+    var dst = $('#dstInput').val();
 
-    directionsService.route(directionsRequest, function (result, status) {
-        if (status == 'OK') {
-            alert(status);
-            directionsDisplay.setDirections(result);
-        }
-    })
+    getRoute(src, dst);
 }
