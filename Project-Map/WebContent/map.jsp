@@ -45,13 +45,7 @@
 			</div>
 		</div>
 	</div>
-	<div id="map">
-		<div id="infoContent">
-			<img src="" width="16" height="16" id="placeIcon"> <span
-				id="placeName" class="title"></span> <br> <span
-				id="placeAddress"></span>
-		</div>
-	</div>
+	<div id="map"></div>
 	<script src="Metro.js" type="text/javascript"></script>
 </body>
 

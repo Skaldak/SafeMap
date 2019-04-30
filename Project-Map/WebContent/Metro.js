@@ -6,25 +6,13 @@ function initAutocomplete(map, input, type) {
     var autocomplete = new google.maps.places.Autocomplete(input);
 
     autocomplete.bindTo('bounds', map);
-    autocomplete.setFields(['address_components', 'geometry', 'icon', 'name']);
-
-    var info = new google.maps.InfoWindow();
-    var infoContent = document.getElementById('infoContent');
-
-    info.setContent(infoContent);
+    autocomplete.setFields(['geometry', 'name']);
 
     var marker = new google.maps.Marker({
         map: map,
-        anchorPoint: new google.maps.Point(0, -29)
     });
 
-    if (type == 'src')
-        marker.setIcon(getCircle(16, 'green', 0.5));
-    else if (type == 'dst')
-        marker.setIcon(getCircle(16, 'red', 0.5));
-
     autocomplete.addListener('place_changed', function () {
-        info.close();
         marker.setVisible(false);
 
         var place = autocomplete.getPlace();
@@ -39,31 +27,19 @@ function initAutocomplete(map, input, type) {
             map.setZoom(12.5);
         }
         marker.setPosition(place.geometry.location);
-        marker.setVisible(true);
         if (type == 'src') {
+            marker.setIcon(getCircle(16, 'green', 0.5));
             srcLocation = place.geometry.location;
             if (dstLocation !== null && dstLocation !== undefined)
                 getRoute(srcLocation, dstLocation);
         }
         else if (type == 'dst') {
+            marker.setIcon(getCircle(16, 'red', 0.5));
             dstLocation = place.geometry.location;
             if (srcLocation !== null && srcLocation !== undefined)
                 getRoute(srcLocation, dstLocation);
         }
-
-        var address = '';
-
-        if (place.address_components) {
-            address = [
-                (place.address_components[0] && place.address_components[0].short_name || ''),
-                (place.address_components[1] && place.address_components[1].short_name || ''),
-                (place.address_components[2] && place.address_components[2].short_name || '')
-            ].join(' ');
-        }
-        infoContent.children['placeIcon'].src = place.icon;
-        infoContent.children['placeName'].textContent = place.name;
-        infoContent.children['placeAddress'].textContent = address;
-        info.open(map, marker);
+        marker.setVisible(true);
     });
 }
 
