@@ -11,12 +11,8 @@
 <title>MapZ</title>
 <link rel="stylesheet" type="text/css" href="theme.css">
 <script
-	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBehobbX14jcAkCrAvh_azviuQ57c7Azko&callback=initMap"
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBehobbX14jcAkCrAvh_azviuQ57c7Azko&callback=initMap&libraries=geometry,places"
 	async defer>
-	
-</script>
-<script type="text/javascript"
-	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBehobbX14jcAkCrAvh_azviuQ57c7Azko&libraries=places">
 	
 </script>
 <script src="jquery-3.3.1.js" type="text/javascript"></script>
