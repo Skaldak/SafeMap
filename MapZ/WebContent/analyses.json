@@ -1,0 +1,36 @@
+{
+    "adjacent": {
+        "max": 4489.296235225532,
+        "min": 16.90852166749971
+    },
+    "corner": {
+        "topLeft": {
+            "latitude": 49.04954211817629,
+            "longitude": 2.0120551690790514
+        },
+        "topRight": {
+            "latitude": 49.04954211817629,
+            "longitude": 2.7828140416090412
+        },
+        "bottomLeft": {
+            "latitude": 48.69506073208291,
+            "longitude": 2.0120551690790514
+        },
+        "bottomRight": 48.69506073208291,
+        "longitude": 2.7828140416090412
+    },
+    "interval": {
+        "latitudeLeftInterval": 39460.68739560937,
+        "latitudeRightInterval": 39460.68739560937,
+        "longitudeUpperInterval": 56233.92867491481,
+        "longitudeLowerInertval": 56633.77893242403
+    },
+    "latitude": {
+        "max": 49.04954211817629,
+        "min": 48.69506073208291
+    },
+    "longitude": {
+        "max": 2.7828140416090412,
+        "min": 2.0120551690790514
+    }
+}

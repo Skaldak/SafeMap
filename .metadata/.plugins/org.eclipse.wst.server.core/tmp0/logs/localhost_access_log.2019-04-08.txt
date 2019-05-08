@@ -1,0 +1,7 @@
+127.0.0.1 - - [08/Apr/2019:11:23:25 +0200] "GET / HTTP/1.1" 404 1068
+0:0:0:0:0:0:0:1 - - [08/Apr/2019:11:23:26 +0200] "GET /Project-Map/earthquake.html HTTP/1.1" 200 1900
+0:0:0:0:0:0:0:1 - - [08/Apr/2019:11:23:39 +0200] "GET /Project-Map/earthquake.html HTTP/1.1" 200 1900
+0:0:0:0:0:0:0:1 - - [08/Apr/2019:11:23:39 +0200] "GET /favicon.ico HTTP/1.1" 404 1079
+0:0:0:0:0:0:0:1 - - [08/Apr/2019:11:29:53 +0200] "GET /Project-Map/map.html HTTP/1.1" 200 713
+0:0:0:0:0:0:0:1 - - [08/Apr/2019:11:39:52 +0200] "GET /Project-Map/map.html HTTP/1.1" 200 713
+0:0:0:0:0:0:0:1 - - [08/Apr/2019:11:39:58 +0200] "GET /Project-Map/earthquake.html HTTP/1.1" 200 1927

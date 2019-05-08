@@ -1,0 +1,14 @@
+maxAdjacent = 
+0.05404760971403529
+maxLatitude = 
+49.04954211817629
+minLatitude = 
+48.69506073208291
+spanLatitude = 
+Infinity
+maxLongitude = 
+2.7828140416090412
+minLongitude = 
+2.0120551690790514
+spanLongitude = 
+Infinity

@@ -1,0 +1,10 @@
+Min Interval = 16.90852166749971m
+Max Interval = 4489.296235225532m 
+Max Latitude = 49.04954211817629
+Min Latitude = 48.69506073208291
+Max Longitude = 2.7828140416090412
+Min Longitude = 2.0120551690790514
+Latitude Left Interval = 39460.68739560937m
+Latitude Right Interval = 39460.68739560937m
+Longitude Upper Interval = 56233.92867491481m
+Longitude Lower Interval = 56633.77893242403m
