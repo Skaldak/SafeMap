@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Get City Name API</title>
+    <link rel="stylesheet" type="text/css" href="../HTML&CSS&JS/myFirstStyle.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <style type="text/css">
+        .ui-menu .ui-menu-item a,
+        .ui-menu .ui-menu-item a.ui-state-hover,
+        .ui-menu .ui-menu-item a.ui-state-active {
+            font-weight: normal;
+            margin: -1px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .ui-autocomplete-loading {
+            background: white url("/images/ui-anim_basic_16x16.gif") right center no-repeat;
+        }
+    </style>
+    <script>
+        $(function () {
+            $("#City").autocomplete({
+                source: function (request, response) {
+                    jQuery.getJSON(
+                        "http://gd.geobytes.com/AutoCompleteCity?callback=?&q=" + request.term,
+                        function (data) {
+                            response(data);
+                        }
+                    );
+                },
+                minLength: 3,
+                select: function (event, ui) {
+                    var selectedObj = ui.item;
+                    jQuery("#f_elem_city").val(selectedObj.value);
+                    getcitydetails(selectedObj.value);
+                    return false;
+                },
+                open: function () {
+                    jQuery(this).removeClass("ui-corner-all").addClass("ui-corner-top");
+                },
+                close: function () {
+                    jQuery(this).removeClass("ui-corner-top").addClass("ui-corner-all");
+                }
+            });
+            $("#City").autocomplete("option", "delay", 100);
+        })
+    </script>
+</head>
+
+<body>
+    <p>
+        <label for="City">City </label>
+        <input type="text" name="City" id="City" />
+    </p>
+</body>
+
+</html>

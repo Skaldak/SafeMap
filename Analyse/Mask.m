@@ -10,39 +10,26 @@ load('latlngAnalyses.mat');
 %Normalize
 maxTraffic = max([Station.traffic]);
 minTraffic = min([Station.traffic]);
-traffic = num2cell(([Station.traffic]-minTraffic) / (maxTraffic - minTraffic));
+traffic = ([Station.traffic]-minTraffic) / (maxTraffic - minTraffic);
+traffic(isnan(traffic)) = mean(traffic, 'omitnan');
+traffic = num2cell(traffic);
 [Station.traffic] = deal(traffic{:});
 
 Bound.x = 566;
 Bound.y = 395;
-range = ceil(Adjacent.max / 100);
+range = ceil(Adjacent.max / 100) / (exp(1));
+sigma = [range, 0; 0, range];
 mask = zeros(Bound.y, Bound.x);
+[x, y] = meshgrid(1:Bound.x, 1:Bound.y);
 
 for stationCount = 1:length(Station)
     [stationX, stationY] = getCoordinate(Station(stationCount).latitude, Station(stationCount).longitude);
     stationX = round(stationX);
     stationY = round(stationY);
-    boundX = [stationX - range, stationX + range];
-    boundY = [stationY - range, stationY + range];
-
-    if boundX(1) < 1
-        boundX(1) = 1;
-    end
-
-    if boundX(2) > Bound.x
-        boundX(2) = Bound.x;
-    end
-
-    if boundY(1) < 1
-        boundY(1) = 1;
-    end
-
-    if boundY(2) > Bound.y
-        boundY(2) = Bound.y;
-    end
-
-    mask(boundY(1):boundY(2), boundX(1):boundX(2)) = mask(boundY(1):boundY(2), boundX(1):boundX(2)) + Station(stationCount).traffic;
+    mu = [stationY, stationX];
+    traffic = mvnpdf([x(:) y(:)], mu, sigma);
+    traffic = reshape(traffic, size(x));
+    mask = mask + traffic;
 end
-
-[x, y] = meshgrid(1:Bound.x, 1:Bound.y);
+mask=mask./max(max(mask));
 surf(x, y, mask);

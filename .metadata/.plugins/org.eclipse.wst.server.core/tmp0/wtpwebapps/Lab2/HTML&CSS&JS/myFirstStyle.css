@@ -1,0 +1,52 @@
+@charset "UTF-8";
+body
+{
+	font-family: sans-serif;
+	font-weight: bold;
+}
+form
+{
+	padding: 10px;
+	width: 420px;
+}
+fieldset
+{
+	text-align: right;
+	padding: 0px 20px 20px 20px;
+	margin-bottom: 10px;
+	border-width: 2px;
+	border-style: solid;
+}
+legend
+{
+	color: red;
+	font-weight: bold;
+}
+label
+{
+	display: inline-block;
+	margin-right: 42px;
+}
+input
+{
+	background-color: #FFF3F3;
+	border: 1px solid red;
+	border-radius: 5px;
+	padding: 3px;
+	width: 200px;
+}
+input:focus
+{
+	background-color: white;
+}
+input[type=radio]
+{
+	background-color: white;
+}
+input[type=submit]
+{
+	width: 100px;
+	margin-left: 7px;
+	box-shadow: 1px 1px 1px darkred;
+	cursor: pointer;
+}
