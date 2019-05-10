@@ -19,7 +19,7 @@ Bound.x = 566;
 Bound.y = 395;
 range = ceil(Adjacent.max / 100) / (exp(1));
 sigma = [range, 0; 0, range];
-mask = zeros(Bound.y, Bound.x);
+Mask = zeros(Bound.y, Bound.x);
 [x, y] = meshgrid(1:Bound.x, 1:Bound.y);
 
 for stationCount = 1:length(Station)
@@ -29,7 +29,9 @@ for stationCount = 1:length(Station)
     mu = [stationY, stationX];
     traffic = mvnpdf([x(:) y(:)], mu, sigma);
     traffic = reshape(traffic, size(x));
-    mask = mask + traffic;
+    Mask = Mask + traffic;
 end
-mask=mask./max(max(mask));
-surf(x, y, mask);
+
+Mask = Mask ./ max(max(Mask));
+save('mask.mat', 'Mask');
+surf(x, y, Mask);
