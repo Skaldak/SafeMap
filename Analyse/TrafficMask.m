@@ -2,6 +2,7 @@ close all;
 clear;
 clc;
 
+addpath('jsonlab-1.5');
 load('station.mat');
 load('adjacentAnalyses.mat');
 load('boundAnalyses.mat');
@@ -33,5 +34,6 @@ for stationCount = 1:length(Station)
 end
 
 Mask = Mask ./ max(max(Mask));
+savejson('mask', Mask, 'Mask.json');
 save('mask.mat', 'Mask');
 surf(x, y, Mask);

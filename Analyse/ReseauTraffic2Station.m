@@ -4,8 +4,8 @@ clc;
 
 addpath('jsonlab-1.5');
 
-Reseau = loadjson('../Data/reseau.json');
-Traffic = loadjson('../Data/traffic.json');
+Reseau = loadjson('reseau.json');
+Traffic = loadjson('traffic.json');
 
 ReseauStation = struct2cell(Reseau.stations);
 StationStruct = struct('name', [], 'latitude', 0, 'longitude', 0, 'traffic', nan);

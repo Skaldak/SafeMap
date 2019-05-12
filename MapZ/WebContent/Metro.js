@@ -6,11 +6,11 @@ const LONGITUDEBOUND = {
     "max": 2.7828140416090412,
     "min": 2.0120551690790514
 };
-const XBOUND = 57000;
-const YBOUND = 40000;
-const RADIUS = 4490;
+const SCALE = 100;
 
 var map;
+var mask;
+var pace;
 var srcLocation, dstLocation;
 var directionsRequest, directionsService, directionsRenderer;
 
@@ -60,6 +60,7 @@ function initDirection(map) {
     directionsRenderer.setMap(map);
 }
 
+// callback
 function initMap() {
     var paris = {
         lat: 48.8566,
@@ -73,6 +74,18 @@ function initMap() {
     initDirection(map);
     initSearch(map);
     initStation(map);
+    initMask();
+}
+
+function initMask() {
+    $.ajax({
+        dataType: "json",
+        url: "Data/mask.json",
+        async: false,
+        success: function (Mask) {
+            mask = Mask.mask;
+        }
+    });
 }
 
 function initSearch(map) {
@@ -85,19 +98,19 @@ function initSearch(map) {
 }
 
 function initStation(map) {
-    $.getJSON("reseau.json", function (Metro) {
+    $.getJSON("Data/reseau.json", function (Metro) {
         var Station = Metro.stations;
 
-        $.each(Station, function (station, stationInfomation) {
-            var latlng = new google.maps.LatLng(stationInfomation.lat, stationInfomation.lng);
+        $.each(Station, function (station, stationInformation) {
+            var latlng = new google.maps.LatLng(stationInformation.lat, stationInformation.lng);
             var stationMarker = new google.maps.Marker({
                 map: map,
                 position: latlng,
                 title: station,
-                icon: getCircle(getMagnitude(getTraffic(stationInfomation.nom)), 'red', 0.2)
+                icon: getCircle(getMagnitude(getTraffic(stationInformation.nom)), 'red', 0.2)
             });
-        })
-    })
+        });
+    });
 }
 
 function getCircle(magnitude, fillColor, fillOpacity) {
@@ -107,12 +120,8 @@ function getCircle(magnitude, fillColor, fillOpacity) {
         fillOpacity: fillOpacity,
         scale: magnitude,
         strokeColor: 'white',
-        strokeWeight: .5
+        strokeWeight: 0.5
     };
-}
-
-function getNormalizedTraffic(station) {
-    return (getTraffic(station) - 177017.0) / (50860744.0 - 177017.0);
 }
 
 function getMagnitude(traffic) {
@@ -126,11 +135,21 @@ function getRoute(src, dst) {
         travelMode: 'WALKING'
     };
 
-    directionsService.route(directionsRequest, function (result, status) {
+    directionsService.route(directionsRequest, function (response, status) {
         if (status == 'OK') {
-            directionsRenderer.setDirections(result);
+            pace = [];
+            directionsRenderer.setDirections(response);
+            $.each(response.routes[0].legs[0].steps, function (step, stepInformation) {
+                $.each(stepInformation.path, function (path, pathInformation) {
+                    var paceLatitude = pathInformation.lat();
+                    var paceLongitude = pathInformation.lng();
+                    var paceSafety = getMask(paceLatitude, paceLongitude);
+
+                    pace.push({ latitude: paceLatitude, longitude: paceLongitude, safety: paceSafety });
+                });
+            });
         }
-    })
+    });
 }
 
 function getTraffic(station) {
@@ -139,17 +158,17 @@ function getTraffic(station) {
 
     $.ajax({
         dataType: "json",
-        url: "traffic.json",
+        url: "Data/traffic.json",
         async: false,
         success: function (Station) {
-            $.each(Station, function (station, stationInfomation) {
-                var tempStation = stationInfomation.fields.station.toUpperCase();
+            $.each(Station, function (station, stationInformation) {
+                var tempStation = stationInformation.fields.station.toUpperCase();
                 if (tempStation == targetStation) {
-                    traffic = stationInfomation.fields.trafic;
+                    traffic = stationInformation.fields.trafic;
                 }
-            })
+            });
         }
-    })
+    });
 
     if (typeof (traffic) == "undefined")
         return 0;
@@ -164,85 +183,18 @@ function navigate() {
     getRoute(src, dst);
 }
 
-function analyse() {
-    $.ajax({
-        dataType: "json",
-        url: "reseau.json",
-        async: false,
-        success: function (Metro) {
-            var Station = Metro.stations;
-            var minInterval = Infinity;
-            var maxInterval = 0;
-            var minLatitude = Infinity;
-            var maxLatitude = 0;
-            var minLongitude = Infinity;
-            var maxLongitude = 0;
-
-            $.each(Station, function (station1, stationInfomation1) {
-                var minAdjacent = Infinity;
-                var latlng1 = new google.maps.LatLng(stationInfomation1.lat, stationInfomation1.lng);
-
-                $.each(Station, function (station2, stationInfomation2) {
-                    var latlng2 = new google.maps.LatLng(stationInfomation2.lat, stationInfomation2.lng);
-
-                    if (stationInfomation1.lat != stationInfomation2.lat && stationInfomation1.lng != stationInfomation2.lng) {
-                        var adjacent = google.maps.geometry.spherical.computeDistanceBetween(latlng1, latlng2);
-
-                        if (adjacent < minAdjacent)
-                            minAdjacent = adjacent;
-                    }
-                })
-                if (minAdjacent > maxInterval)
-                    maxInterval = minAdjacent;
-                else if (minAdjacent < minInterval)
-                    minInterval = minAdjacent;
-
-                if (stationInfomation1.lat > maxLatitude)
-                    maxLatitude = stationInfomation1.lat;
-                else if (stationInfomation1.lat < minLatitude)
-                    minLatitude = stationInfomation1.lat;
-                if (stationInfomation1.lng > maxLongitude)
-                    maxLongitude = stationInfomation1.lng;
-                else if (stationInfomation1.lng < minLongitude)
-                    minLongitude = stationInfomation1.lng;
-            })
-
-            var TopLeft = new google.maps.LatLng(maxLatitude, minLongitude);
-            var TopRight = new google.maps.LatLng(maxLatitude, maxLongitude);
-            var BottomLeft = new google.maps.LatLng(minLatitude, minLongitude);
-            var BottomRight = new google.maps.LatLng(minLatitude, maxLongitude);
-
-            var LatitudeLeftInterval = google.maps.geometry.spherical.computeDistanceBetween(TopLeft, BottomLeft);
-            var LatitudeRightInterval = google.maps.geometry.spherical.computeDistanceBetween(TopRight, BottomRight);
-            var LongitudeUpperInterval = google.maps.geometry.spherical.computeDistanceBetween(TopLeft, TopRight);
-            var LongitudeLowerInterval = google.maps.geometry.spherical.computeDistanceBetween(BottomLeft, BottomRight);
-
-            console.log("Min Interval = %d m\n", minInterval);
-            console.log("Max Interval = %d m\n", maxInterval);
-            console.log("Max Latitude = %d\n", maxLatitude);
-            console.log("Min Latitude = %d\n", minLatitude);
-            console.log("Max Longitude = %d\n", maxLongitude);
-            console.log("Min Longitude = %d\n", minLongitude);
-            console.log("Latitude Left Interval = %d m\n", LatitudeLeftInterval);
-            console.log("Latitude Right Interval = %d m\n", LatitudeRightInterval);
-            console.log("Longitude Upper Interval = %d m\n", LongitudeUpperInterval);
-            console.log("Longitude Lower Interval = %d m\n", LongitudeLowerInterval);
-        }
-    })
-}
-
 function getX(latitude, longitude) {
     const origin = new google.maps.LatLng(latitude, LONGITUDEBOUND.min);
     var target = new google.maps.LatLng(latitude, longitude);
 
-    return google.maps.geometry.spherical.computeDistanceBetween(origin, target);
+    return Math.round(google.maps.geometry.spherical.computeDistanceBetween(origin, target) / SCALE);
 }
 
 function getY(latitude, longitude) {
     const origin = new google.maps.LatLng(LATITUDEBOUND.min, longitude);
     var target = new google.maps.LatLng(latitude, longitude);
 
-    return google.maps.geometry.spherical.computeDistanceBetween(origin, target);
+    return Math.round(google.maps.geometry.spherical.computeDistanceBetween(origin, target) / SCALE);
 }
 
 function getCoordinate(latitude, longitude) {
@@ -252,26 +204,8 @@ function getCoordinate(latitude, longitude) {
     };
 }
 
-function getMask() {
-    $.ajax({
-        dataType: "json",
-        url: "reseau.json",
-        async: false,
-        success: function (Metro) {
-            var mask = new Array(XBOUND);
-            var Station = Metro.stations;
+function getMask(latitude, longitude) {
+    var coordinate = getCoordinate(latitude, longitude);
 
-            mask.forEach(function (xMask) {
-                xMask = new Array(YBOUND).fill(0);
-            });
-            $.each(Station, function (station, stationInfomation) {
-                var coordinateStation = getCoordinate(stationInfomation.lat, stationInfomation.lng);
-                var normalizedTraffic = getNormalizedTraffic(stationInfomation.nom);
-
-                for (var x = 0; x < XBOUND; x++) {
-                    for (var y = 0; y < YBOUND; y++) {}
-                }
-            })
-        }
-    })
+    return mask[coordinate.y][coordinate.x];
 }
