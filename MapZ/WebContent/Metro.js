@@ -1,10 +1,17 @@
-const LATITUDEBOUND = {
-    "max": 49.04954211817629,
-    "min": 48.69506073208291
-};
-const LONGITUDEBOUND = {
-    "max": 2.7828140416090412,
-    "min": 2.0120551690790514
+const BOUND = {
+    "latitude": {
+        "max": 49.04954211817629,
+        "min": 48.69506073208291
+    },
+    "longitude": {
+        "max": 2.7828140416090412,
+        "min": 2.0120551690790514
+    },
+    "x": {
+        "max": 56570.44245264509,
+        "min": 56171.03936832871
+    },
+    "y": 39416.55647098469
 };
 const SCALE = 100;
 
@@ -183,20 +190,6 @@ function navigate() {
     getRoute(src, dst);
 }
 
-function getX(latitude, longitude) {
-    const origin = new google.maps.LatLng(latitude, LONGITUDEBOUND.min);
-    var target = new google.maps.LatLng(latitude, longitude);
-
-    return Math.round(google.maps.geometry.spherical.computeDistanceBetween(origin, target) / SCALE);
-}
-
-function getY(latitude, longitude) {
-    const origin = new google.maps.LatLng(LATITUDEBOUND.min, longitude);
-    var target = new google.maps.LatLng(latitude, longitude);
-
-    return Math.round(google.maps.geometry.spherical.computeDistanceBetween(origin, target) / SCALE);
-}
-
 function getCoordinate(latitude, longitude) {
     return {
         x: getX(latitude, longitude),
@@ -204,8 +197,34 @@ function getCoordinate(latitude, longitude) {
     };
 }
 
+function getDistance(lat1, lng1, lat2, lng2) {
+    var origin = new google.maps.LatLng(lat1, lng1);
+    var target = new google.maps.LatLng(lat2, lng2);
+
+    return google.maps.geometry.spherical.computeDistanceBetween(origin, target);
+}
+
+function getLatLng(x, y) {
+    var latitude = y * SCALE * (BOUND.latitude.max - BOUND.latitude.min) / BOUND.y + BOUND.latitude.min;
+    var bound = getDistance(latitude, BOUND.longitude.min, latitude, BOUND.longitude.max);
+    var longitude = x * SCALE * (BOUND.longitude.max - BOUND.longitude.min) / bound + BOUND.longitude.min;
+
+    return {
+        "latitude": latitude,
+        "longitude": longitude
+    };
+}
+
 function getMask(latitude, longitude) {
     var coordinate = getCoordinate(latitude, longitude);
 
     return mask[coordinate.y][coordinate.x];
+}
+
+function getX(latitude, longitude) {
+    return Math.round(getDistance(latitude, BOUND.longitude.min, latitude, longitude) / SCALE);
+}
+
+function getY(latitude, longitude) {
+    return Math.round(getDistance(BOUND.latitude.min, longitude, latitude, longitude) / SCALE);
 }

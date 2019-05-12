@@ -3,5 +3,5 @@ function latitude = getLatitude(x, y)
     load('latlngAnalyses.mat', 'LatLng');
 
     SCALE = 100;
-    latitude = y * SCALE * (LatLng.lat.max - LatLng.lat.min) / Bound.y(1) + LatLng.lat.min;
+    latitude = (y - 1) * SCALE * (LatLng.lat.max - LatLng.lat.min) / Bound.y(1) + LatLng.lat.min;
 end

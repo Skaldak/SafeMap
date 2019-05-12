@@ -25,10 +25,8 @@ Mask = zeros(Bound.y, Bound.x);
 
 for stationCount = 1:length(Station)
     [stationX, stationY] = getCoordinate(Station(stationCount).latitude, Station(stationCount).longitude);
-    stationX = round(stationX);
-    stationY = round(stationY);
     mu = [stationY, stationX];
-    traffic = mvnpdf([x(:) y(:)], mu, sigma);
+    traffic = Station(stationCount).traffic * mvnpdf([y(:) x(:)], mu, sigma);
     traffic = reshape(traffic, size(x));
     Mask = Mask + traffic;
 end

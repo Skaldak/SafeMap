@@ -1,6 +1,0 @@
-function longitude = getLongitude(x, y)
-    load('boundAnalyses.mat', Bound)
-    load('latlngAnalyses.mat', LatLng);
-    
-    
-end
