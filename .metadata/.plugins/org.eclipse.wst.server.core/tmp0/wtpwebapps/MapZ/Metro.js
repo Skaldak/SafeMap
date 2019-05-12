@@ -1,4 +1,8 @@
 const BOUND = {
+    "coordinate": {
+        "x": 566,
+        "y": 395
+    },
     "latitude": {
         "max": 49.04954211817629,
         "min": 48.69506073208291
@@ -162,22 +166,13 @@ function getRoute(src, dst) {
         if (status == 'OK') {
             getPace(response);
             hazardArray = getHazard(pace);
-            if (!isSafe(hazardArray)) {
-                wayPointArray = getWayPointArray(hazardArray);
+            wayPointArray = getWayPointArray(hazardArray);
+            if (wayPointArray.length > 0 && wayPointArray.length < 10) {
                 directionsRequest.waypoints = wayPointArray;
                 directionsService.route(directionsRequest, function (response, status) {
                     if (status == 'OK') {
                         getPace(response);
-                        hazardArray = getHazard(pace);
-                        if (!isSafe(hazardArray)) {
-                            wayPointArray = getWayPointArray(hazardArray);
-                            directionsRequest.waypoints = wayPointArray;
-                        }
-                        directionsService.route(directionsRequest, function (response, status) {
-                            if (status == 'OK') {
-                                directionsRenderer.setDirections(response);
-                            }
-                        });
+                        directionsRenderer.setDirections(response);
                     }
                 });
             }
@@ -233,12 +228,39 @@ function getHazard(pace) {
     var hazard = [];
 
     for (var paceCount = 1; paceCount < pace.length - 1; paceCount++) {
-        if (pace[paceCount].safety > pace[paceCount - 1].safety && pace[paceCount].safety > pace[paceCount + 1].safety) {
+        if (pace[paceCount].safety > pace[paceCount - 1].safety && pace[paceCount].safety >= pace[paceCount + 1].safety) {
             hazard.push(pace[paceCount]);
         }
     }
 
     return hazard;
+}
+
+// return kernel[3][3]
+function getKernel(x, y) {
+    var kernel = {
+        "x": [],
+        "y": [],
+        "safety": []
+    };
+    var rangeX = [], rangeY = [];
+
+    rangeX.push(x);
+    rangeY.push(y);
+    if (x > 0) rangeX.push(x - 1);
+    if (x < BOUND.coordinate.x) rangeX.push(x + 1);
+    if (y > 0) rangeY.push(y - 1);
+    if (x < BOUND.coordinate.y) rangeY.push(y + 1);
+
+    for (var xCount = 0; xCount < rangeX.length; xCount++) {
+        for (var yCount = 0; yCount < rangeY.length; yCount++) {
+            kernel.x.push(rangeX[xCount]);
+            kernel.y.push(rangeY[yCount]);
+            kernel.safety.push(mask[rangeY[yCount]][rangeX[xCount]]);
+        }
+    }
+
+    return kernel;
 }
 
 // return latlng = { latitude, longitude }
@@ -279,28 +301,47 @@ function getPace(response) {
 
 // return wayPoint = { latitude, longitude }
 function getWayPoint(hazard) {
-    var target = {};
+    var target;
 
-    $.ajax({
-        dataType: "json",
-        url: "Data/exetremum.json",
-        async: false,
-        success: function (Exetremum) {
-            var Minimum = Exetremum.exetremum;
-            var origin = getCoordinate(hazard.latitude, hazard.longitude);
-            var norm = Infinity;
+    if (hazard.safety > THRESHOLD) {
+        target = getCoordinate(hazard.latitude, hazard.longitude);
 
-            $.each(Minimum, function (minimum, minimumInformation) {
-                var tempNorm = Math.abs(minimumInformation.x - origin.x) + Math.abs(minimumInformation.y - origin.y);
+        while (mask[target.y][target.x] > THRESHOLD) {
+            var kernel = getKernel(target.x, target.y);
+            var index;
+            var next = {};
 
-                if (tempNorm < norm) {
-                    norm = tempNorm;
-                    target.x = minimumInformation.x;
-                    target.y = minimumInformation.y;
-                }
-            });
+            next.safety = Math.min.apply(null, kernel.safety);
+            index = kernel.safety.findIndex(function (safety) { return safety == next.safety; });
+            next.x = kernel.x[index];
+            next.y = kernel.y[index];
+
+            target = next;
         }
-    });
+    }
+    else return null;
+
+    // Exetremum
+    // $.ajax({
+    //     dataType: "json",
+    //     url: "Data/exetremum.json",
+    //     async: false,
+    //     success: function (Exetremum) {
+    //         var Minimum = Exetremum.exetremum;
+    //         var origin = getCoordinate(hazard.latitude, hazard.longitude);
+    //         var norm = Infinity;
+
+    //         $.each(Minimum, function (minimum, minimumInformation) {
+    //             var tempNorm = Math.abs(minimumInformation.x - origin.x) + Math.abs(minimumInformation.y - origin.y);
+
+    //             if (tempNorm < norm) {
+    //                 norm = tempNorm;
+    //                 target.x = minimumInformation.x;
+    //                 target.y = minimumInformation.y;
+    //             }
+    //         });
+    //     }
+    // });
 
     return getLatLng(target.x, target.y);
 }
@@ -310,8 +351,8 @@ function getWayPointArray(hazardArray) {
     var wayPointArray = [];
 
     $.each(hazardArray, function (hazard, hazardInformation) {
-        if (hazardInformation.safety > THRESHOLD) {
-            var wayPoint = getWayPoint(hazardInformation);
+        var wayPoint = getWayPoint(hazardInformation);
+        if (wayPoint != null) {
             var wayPointLatLng = new google.maps.LatLng(wayPoint.latitude, wayPoint.longitude);
 
             wayPointArray.push({
