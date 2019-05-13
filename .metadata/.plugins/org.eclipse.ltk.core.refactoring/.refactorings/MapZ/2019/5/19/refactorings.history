@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move &apos;analyses.json, mask.json, reseau.json, traffic.json&apos; to &apos;Data&apos;" description="Move 4 resources to &apos;Data&apos;" destination="WebContent/Data" element1="WebContent/analyses.json" element2="WebContent/mask.json" element3="WebContent/reseau.json" element4="WebContent/traffic.json" flags="7" id="org.eclipse.ltk.core.refactoring.move.resources" resources="4" stamp="1557572786664" updateReferences="true"/>
+</session>
