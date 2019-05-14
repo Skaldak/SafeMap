@@ -22,7 +22,6 @@ const THRESHOLD = 0.618;
 
 var map;
 var mask;
-var pace;
 var srcLocation, dstLocation;
 var directionsRequest, directionsService, directionsRenderer;
 
@@ -164,7 +163,8 @@ function getRoute(src, dst) {
     };
     directionsService.route(directionsRequest, function (response, status) {
         if (status == 'OK') {
-            getPace(response);
+            var pace = getPace(response);
+
             hazardArray = getHazard(pace);
             wayPointArray = getWayPointArray(hazardArray);
             if (wayPointArray.length > 0 && wayPointArray.length < 10) {
@@ -182,7 +182,7 @@ function getRoute(src, dst) {
     });
 }
 
-// return traffic(person)
+// return traffic = integer(person)
 function getTraffic(station) {
     var targetStation = station.toUpperCase();
     var traffic;
@@ -215,7 +215,7 @@ function getCoordinate(latitude, longitude) {
     };
 }
 
-// return distance(m)
+// return distance = float(m)
 function getDistance(lat1, lng1, lat2, lng2) {
     var origin = new google.maps.LatLng(lat1, lng1);
     var target = new google.maps.LatLng(lat2, lng2);
@@ -236,7 +236,7 @@ function getHazard(pace) {
     return hazard;
 }
 
-// return kernel[3][3]
+// return kernel[3][3] = mask[][]
 function getKernel(x, y) {
     var kernel = {
         "x": [],
@@ -284,7 +284,7 @@ function getMask(latitude, longitude) {
 
 // pace = { latitude, longitude, safety }
 function getPace(response) {
-    pace = [];
+    var pace = [];
 
     $.each(response.routes[0].legs, function (leg, legInformation) {
         $.each(legInformation.steps, function (step, stepInformation) {
@@ -297,6 +297,8 @@ function getPace(response) {
             });
         });
     });
+
+    return pace;
 }
 
 // return wayPoint = { latitude, longitude }
@@ -320,28 +322,6 @@ function getWayPoint(hazard) {
         }
     }
     else return null;
-
-    // Exetremum
-    // $.ajax({
-    //     dataType: "json",
-    //     url: "Data/exetremum.json",
-    //     async: false,
-    //     success: function (Exetremum) {
-    //         var Minimum = Exetremum.exetremum;
-    //         var origin = getCoordinate(hazard.latitude, hazard.longitude);
-    //         var norm = Infinity;
-
-    //         $.each(Minimum, function (minimum, minimumInformation) {
-    //             var tempNorm = Math.abs(minimumInformation.x - origin.x) + Math.abs(minimumInformation.y - origin.y);
-
-    //             if (tempNorm < norm) {
-    //                 norm = tempNorm;
-    //                 target.x = minimumInformation.x;
-    //                 target.y = minimumInformation.y;
-    //             }
-    //         });
-    //     }
-    // });
 
     return getLatLng(target.x, target.y);
 }
