@@ -18,7 +18,7 @@ const BOUND = {
     "y": 39416.55647098469
 };
 const SCALE = 100;
-const THRESHOLD = 0.618;
+var THRESHOLD = document.getElementById("range");
 
 var map;
 var mask;
@@ -361,3 +361,7 @@ function navigate() {
 
     getRoute(src, dst);
 }
+
+
+
+

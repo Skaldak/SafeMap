@@ -57,7 +57,11 @@ body {
 #dstInput{
 	background-color: #FFF9F9;
 }
-
+#trackbar{
+  position:relative;
+  left:85px;
+  top:20px;
+}
 .searchInput[type=submit] {
 	border-color: navy;
 	border-radius: 16px;
