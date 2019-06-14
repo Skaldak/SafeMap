@@ -17,8 +17,9 @@ const BOUND = {
     },
     "y": 39416.55647098469
 };
-const SCALE = 100;
-const THRESHOLD = 0.618;
+var SCALE = 100;
+var THRESHOLD = 0.618;
+var WAYMAX = 10;
 
 var map;
 var mask;
@@ -167,7 +168,7 @@ function getRoute(src, dst) {
 
             hazardArray = getHazard(pace);
             wayPointArray = getWayPointArray(hazardArray);
-            if (wayPointArray.length > 0 && wayPointArray.length < 10) {
+            if (wayPointArray.length > 0 && wayPointArray.length < WAYMAX) {
                 directionsRequest.waypoints = wayPointArray;
                 directionsService.route(directionsRequest, function (response, status) {
                     if (status == 'OK') {
