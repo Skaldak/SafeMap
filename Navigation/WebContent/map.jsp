@@ -11,7 +11,7 @@
 <title>MapZ</title>
 <link rel="stylesheet" type="text/css" href="theme.css">
 <script
-	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBehobbX14jcAkCrAvh_azviuQ57c7Azko&callback=initMap&libraries=geometry,places"
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0shcDd6-2Z09OGOOg9NcaGgdPAukpVdg&callback=initMap&libraries=geometry,places"
 	async defer>
 	
 </script>
